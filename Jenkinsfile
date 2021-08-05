@@ -14,7 +14,6 @@ pipeline {
         APP_CONTEXT_ROOT = "petclinic"
         APP_LISTENING_PORT = "8080"
         TEST_CONTAINER_NAME = "ci-test-123"
-        DOCKER_HUB = credentials("test-docker-hub")
     }
 
     stages {
