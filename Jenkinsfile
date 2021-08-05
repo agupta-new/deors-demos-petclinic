@@ -4,7 +4,6 @@ pipeline {
     agent {
         docker {
             image 'adoptopenjdk/openjdk8:jdk8u232-b09-debian'
-            args '--network ci --mount type=volume,source=ci-maven-home,target=/root/.m2'
         }
     }
 
