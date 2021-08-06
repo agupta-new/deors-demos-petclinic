@@ -52,7 +52,7 @@ pipeline {
             steps {
                 echo "-=- run code inspection & check quality gate -=-"
                 withSonarQubeEnv('sonarqube') {
-                    sh "./mvnw sonar:sonar"
+                    sh "mvn clean package sonar:sonar"
                 }
                 timeout(time: 10, unit: 'MINUTES') {
                     //waitForQualityGate abortPipeline: true
