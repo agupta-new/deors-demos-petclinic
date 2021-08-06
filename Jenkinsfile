@@ -51,9 +51,8 @@ pipeline {
             steps {
                 echo "-=- run code inspection & check quality gate -=-"
                 withSonarQubeEnv('sonarqube') {
-                    withMaven(maven:'Maven 3.5') {
-                        sh "mvn clean package sonar:sonar"
-                    }                }
+                        sh "./mvnw clean package sonar:sonar"
+                    }                
                 timeout(time: 10, unit: 'MINUTES') {
                     //waitForQualityGate abortPipeline: true
                     script  {
