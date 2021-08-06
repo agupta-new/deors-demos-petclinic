@@ -32,7 +32,26 @@ pipeline {
                 jacoco execPattern: 'target/jacoco.exec'
             }
         }
-
+        
+        stage('Code inspection & quality gate') {
+            steps {
+                echo "-=- run code inspection & check quality gate -=-"
+                withSonarQubeEnv('sonarqube') {
+                    withMaven(maven:'Maven 3.5') {
+                        sh "mvn clean package sonar:sonar"
+                    }                }
+                timeout(time: 10, unit: 'MINUTES') {
+                    //waitForQualityGate abortPipeline: true
+                    script  {
+                        def qg = waitForQualityGate()
+                        if (qg.status != 'OK' && qg.status != 'WARN') {
+                            error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                        }
+                    }
+                }
+            }
+        }
+        
         stage('Mutation tests') {
             steps {
                 echo "-=- execute mutation tests -=-"
@@ -48,23 +67,7 @@ pipeline {
             }
         }
         
-        stage('Code inspection & quality gate') {
-            steps {
-                echo "-=- run code inspection & check quality gate -=-"
-                withSonarQubeEnv('sonarqube') {
-                    sh "./mvnw clean package sonar:sonar"
-                }
-                timeout(time: 10, unit: 'MINUTES') {
-                    //waitForQualityGate abortPipeline: true
-                    script  {
-                        def qg = waitForQualityGate()
-                        if (qg.status != 'OK' && qg.status != 'WARN') {
-                            error "Pipeline aborted due to quality gate failure: ${qg.status}"
-                        }
-                    }
-                }
-            }
-        }
+
         stage('Build Docker image') {
             steps {
                 echo "-=- build Docker image -=-"
