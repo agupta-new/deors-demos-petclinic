@@ -33,6 +33,20 @@ pipeline {
             }
         }
         
+        stage('Mutation tests') {
+            steps {
+                echo "-=- execute mutation tests -=-"
+                sh "./mvnw org.pitest:pitest-maven:mutationCoverage"
+            }
+        }
+
+        stage('Package') {
+            steps {
+                echo "-=- packaging project -=-"
+                sh "./mvnw package -DskipTests"
+                archiveArtifacts artifacts: 'target/*.war', fingerprint: true
+            }
+        }
         stage('Code inspection & quality gate') {
             steps {
                 echo "-=- run code inspection & check quality gate -=-"
@@ -51,22 +65,6 @@ pipeline {
                 }
             }
         }
-        
-        stage('Mutation tests') {
-            steps {
-                echo "-=- execute mutation tests -=-"
-                sh "./mvnw org.pitest:pitest-maven:mutationCoverage"
-            }
-        }
-
-        stage('Package') {
-            steps {
-                echo "-=- packaging project -=-"
-                sh "./mvnw package -DskipTests"
-                archiveArtifacts artifacts: 'target/*.war', fingerprint: true
-            }
-        }
-        
 
         stage('Build Docker image') {
             steps {
