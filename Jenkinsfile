@@ -48,14 +48,11 @@ pipeline {
             }
         }
         stage('Code inspection & quality gate') {
-            environment {
-        scannerHome = tool 'SonarQubeScanner'
-    }
-            steps {
+              steps {
                 echo "-=- run code inspection & check quality gate -=-"
-                withSonarQubeEnv('sonarqube') {
-                      sh "${scannerHome}/bin/sonar-scanner"
-                    }                
+                withSonarQubeEnv('ci-sonarqube') {
+                    sh "./mvnw sonar:sonar"
+                }              
                 timeout(time: 10, unit: 'MINUTES') {
                     //waitForQualityGate abortPipeline: true
                     script  {
