@@ -47,7 +47,24 @@ pipeline {
                 archiveArtifacts artifacts: 'target/*.war', fingerprint: true
             }
         }
-
+        
+        stage('Code inspection & quality gate') {
+            steps {
+                echo "-=- run code inspection & check quality gate -=-"
+                withSonarQubeEnv('sonarqube') {
+                    sh "./mvnw sonar:sonar"
+                }
+                timeout(time: 10, unit: 'MINUTES') {
+                    //waitForQualityGate abortPipeline: true
+                    script  {
+                        def qg = waitForQualityGate()
+                        if (qg.status != 'OK' && qg.status != 'WARN') {
+                            error "Pipeline aborted due to quality gate failure: ${qg.status}"
+                        }
+                    }
+                }
+            }
+        }
         stage('Build Docker image') {
             steps {
                 echo "-=- build Docker image -=-"
@@ -86,24 +103,6 @@ pipeline {
                 echo "-=- run dependency vulnerability tests -=-"
                 sh "./mvnw dependency-check:check"
                 dependencyCheckPublisher failedTotalHigh: 30, unstableTotalHigh: 25, failedTotalMedium: 110, unstableTotalMedium: 100
-            }
-        }
-
-        stage('Code inspection & quality gate') {
-            steps {
-                echo "-=- run code inspection & check quality gate -=-"
-                withSonarQubeEnv('ci-sonarqube') {
-                    sh "./mvnw sonar:sonar"
-                }
-                timeout(time: 10, unit: 'MINUTES') {
-                    //waitForQualityGate abortPipeline: true
-                    script  {
-                        def qg = waitForQualityGate()
-                        if (qg.status != 'OK' && qg.status != 'WARN') {
-                            error "Pipeline aborted due to quality gate failure: ${qg.status}"
-                        }
-                    }
-                }
             }
         }
 
